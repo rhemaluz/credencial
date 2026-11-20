@@ -123,27 +123,34 @@ body{
 .aviso{font-size:8px;text-align:center;opacity:.75;padding:0 18px 14px;letter-spacing:.03em;line-height:1.4}
 
 .dica{margin-top:16px;font-size:12px;opacity:.7;letter-spacing:.04em}
-.acoes{display:flex;gap:10px;margin-top:14px;width:var(--w)}
+.acoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;width:var(--w)}
 .acoes button{flex:1;border:1px solid rgba(236,212,143,.4);background:rgba(255,255,255,.05);color:var(--ouro-claro);
   font:600 12px Montserrat;letter-spacing:.06em;padding:12px;border-radius:12px}
 .status{margin-top:12px;font-size:11px;opacity:.6;text-align:center}
 .carregando{opacity:.6;pointer-events:none}
-/* Impressão: cartão PVC CR80 em pé (54 x 85,6 mm), frente e verso em páginas separadas */
+/* Impressão para gráfica: CR80 54 x 85,6 mm em pé, sangria 3 mm, marcas de corte, 1 página de instruções + frente + verso */
 #impressao{display:none}
 @media print{
-  @page{size:54mm 85.6mm;margin:0}
-  html,body{background:none!important;padding:0!important;margin:0!important;display:block!important;min-height:0!important}
+  @page{size:80mm 111.6mm;margin:0}
+  html,body{background:#fff!important;padding:0!important;margin:0!important;display:block!important;min-height:0!important}
   body>*:not(#tela-cartao){display:none!important}
   #tela-cartao>*:not(#impressao){display:none!important}
   #tela-cartao{display:block!important}
   #impressao{display:block!important}
-  .pg{width:54mm;height:85.6mm;overflow:hidden;page-break-after:always;break-after:page;position:relative}
-  .pg:last-child{page-break-after:auto;break-after:auto}
-  .pg .escala{width:340px;height:539px;zoom:.6003;position:absolute;left:0;top:0}
-  .pg .face{position:absolute;inset:0;transform:none!important;border-radius:0!important;box-shadow:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .pg .face::after{display:none}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pg{width:80mm;height:111.6mm;overflow:hidden;position:relative;break-after:page;page-break-after:always;background:#fff;color:#000}
+  .pg:last-child{break-after:auto;page-break-after:auto}
+  .escala{width:377.8px;height:576.8px;zoom:.6003;position:absolute;left:62.97px;top:62.97px;overflow:hidden}
+  .pg .face{position:absolute;inset:0;transform:none!important;border-radius:0!important;box-shadow:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important}
+  .pg .face::after{display:none}
+  .pg .face{padding:18.9px}
+  .pg .faixa{margin-left:-18.9px;margin-right:-18.9px}
+  .mc{position:absolute;background:#000}
+  .mc.h{height:.1mm;width:7mm}.mc.v{width:.1mm;height:7mm}
+  .leg{position:absolute;left:0;right:0;bottom:2.5mm;text-align:center;font:600 5.5pt Montserrat,Arial,sans-serif;color:#000;letter-spacing:.02em}
+  .instr{padding:7mm;font:7pt/1.45 Montserrat,Arial,sans-serif;color:#111}
+  .instr h2{font:700 9pt Montserrat,Arial,sans-serif;margin:0 0 2mm;letter-spacing:.04em}
+  .instr ul{margin:0;padding-left:4mm}.instr li{margin-bottom:1.1mm}
 }
 </style>
 </head>
@@ -202,7 +209,7 @@ body{
       </div>
     </div></div>
     <div class="dica">Toque na credencial para ver o verso</div>
-    <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button><button id="imprimir">Imprimir</button></div>
+    <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button><button id="imprimir">Imprimir (gráfica)</button><button id="oficio">Ofício PDF</button></div>
     <div id="impressao"></div>
     <div class="status" id="status"></div>
   </section>
@@ -305,13 +312,49 @@ $('atualizar').onclick = atualizar;
 function montarImpressao(){
   const tipo = document.querySelector('.palco').classList.contains('min') ? 'min' : 'mem';
   const box = $('impressao'); box.innerHTML = '';
-  ['.frente', '.verso'].forEach(sel => {
+  const nome = $('nome').textContent, cod = $('codigo').textContent;
+  const instr = document.createElement('div'); instr.className = 'pg';
+  instr.innerHTML = '<div class="instr"><h2>INSTRUÇÕES PARA A GRÁFICA</h2><ul>'
+    + '<li><b>Produto:</b> cartão PVC CR80, 0,76 mm, frente e verso, 4x4 cores.</li>'
+    + '<li><b>Tamanho final:</b> 54 × 85,6 mm, na vertical (em pé).</li>'
+    + '<li><b>Sangria:</b> 3 mm em todos os lados. As marcas pretas indicam a linha de corte.</li>'
+    + '<li>Imprimir em <b>100%</b> (tamanho real), sem ajustar à página.</li>'
+    + '<li><b>Página 2:</b> frente. <b>Página 3:</b> verso. Virar no lado maior; o topo das duas faces fica do mesmo lado.</li>'
+    + '<li>Cantos arredondados (raio 3 mm), se disponível.</li>'
+    + '<li><b>Titular:</b> ' + nome + ' · ' + cod + '</li></ul></div>';
+  box.appendChild(instr);
+  [['.frente', 'FRENTE'], ['.verso', 'VERSO']].forEach(([sel, rot]) => {
     const pg = document.createElement('div'); pg.className = 'pg ' + tipo;
+    const face = document.querySelector(sel);
+    // a face é desenhada com 3 mm a mais em cada lado (sangria); a faixa do título vai até a borda
     const esc = document.createElement('div'); esc.className = 'escala';
-    esc.appendChild(document.querySelector(sel).cloneNode(true));
-    pg.appendChild(esc); box.appendChild(pg);
+    esc.appendChild(face.cloneNode(true)); pg.appendChild(esc);
+    // marcas de corte nos 4 cantos (linha de corte a 13 mm da borda), fora da sangria
+    [13, 67].forEach(x => [13, 98.6].forEach(y => {
+      const h = document.createElement('div'); h.className = 'mc h';
+      h.style.top = (y - .05) + 'mm'; h.style.left = (x === 13 ? 2 : 71) + 'mm'; pg.appendChild(h);
+      const v = document.createElement('div'); v.className = 'mc v';
+      v.style.left = (x - .05) + 'mm'; v.style.top = (y === 13 ? 2 : 102.6) + 'mm'; pg.appendChild(v);
+    }));
+    const leg = document.createElement('div'); leg.className = 'leg';
+    leg.textContent = rot + ' · 54 × 85,6 mm + sangria 3 mm'; pg.appendChild(leg);
+    box.appendChild(pg);
   });
 }
+$('oficio').onclick = async () => {
+  const l = store.get('login'); if (!l) return;
+  const b = $('oficio'); b.disabled = true; b.textContent = 'Gerando…';
+  try {
+    const r = await (await fetch(API + '?a=oficiopdf&cpf=' + l.cpf + '&cod=' + encodeURIComponent(l.cod))).json();
+    if (!r.ok) { $('status').textContent = r.erro; return; }
+    const bin = atob(r.pdf), arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([arr], {type: 'application/pdf'}));
+    const a = document.createElement('a'); a.href = url; a.download = r.nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { $('status').textContent = 'Sem conexão para gerar o ofício.'; }
+  finally { b.disabled = false; b.textContent = 'Ofício PDF'; }
+};
 $('imprimir').onclick = () => {
   montarImpressao();
   document.title = 'Credencial - ' + ($('nome').textContent || 'Rhema Luz');
