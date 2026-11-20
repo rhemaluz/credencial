@@ -293,7 +293,7 @@ function mostrar(c){
   $('nome').textContent = c.nome;
   $('cargo').textContent = cg;
   const campos = [['CPF', c.cpf], ['Nascimento', c.nascimento]];
-  if (min) campos.push(['Consagração', c.consagracao || '—']);
+  if (min && c.consagracao) campos.push(['Consagração', c.consagracao]);
   campos.push(['Membro desde', c.entrada || '—']);
   campos.push(['Batismo', c.batismo || '—']);
   $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val">${v}</span></div>`).join('');
