@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Credencial Rhema Luz</title>
+<meta name="theme-color" content="#2a190b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Credencial Rhema">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{
+  --marrom:#4a2d16; --marrom2:#2a190b; --marrom3:#6b4423;
+  --ouro:#c9962b; --ouro-claro:#ecd48f; --ouro-escuro:#8a5f1c;
+  --creme:#fbf6ee; --texto:#3b2412;
+  --w:min(88vw, 360px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:Montserrat,system-ui,sans-serif;color:var(--creme);
+  background:radial-gradient(120% 80% at 50% 0%, #4a2d16 0%, #2a190b 55%, #170d05 100%) fixed;
+  min-height:100%;display:flex;flex-direction:column;align-items:center;
+  padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 18px);
+}
+.topo{display:flex;align-items:center;gap:10px;width:var(--w);margin-bottom:16px}
+.topo img{width:34px;height:34px;border-radius:50%}
+.topo b{font-family:Cinzel,serif;font-weight:600;letter-spacing:.06em;font-size:14px;color:var(--ouro-claro)}
+.topo button{margin-left:auto;background:none;border:1px solid rgba(236,212,143,.35);color:var(--ouro-claro);
+  font:600 11px Montserrat;letter-spacing:.08em;padding:7px 12px;border-radius:20px;text-transform:uppercase}
+
+/* ---------- LOGIN ---------- */
+#login{width:var(--w);display:flex;flex-direction:column;align-items:center;margin-top:4vh}
+#login .selo{width:132px;height:132px;border-radius:50%;box-shadow:0 0 0 4px rgba(201,150,43,.35),0 18px 40px rgba(0,0,0,.55)}
+#login h1{font-family:Cinzel,serif;font-weight:700;font-size:24px;letter-spacing:.06em;margin-top:22px;color:var(--ouro-claro);text-align:center}
+#login p.sub{font-size:13px;opacity:.75;margin:6px 0 26px;text-align:center;line-height:1.5}
+.campo{width:100%;margin-bottom:14px}
+.campo label{display:block;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ouro);margin-bottom:6px}
+.campo input{width:100%;font:600 18px Montserrat;letter-spacing:.04em;color:var(--creme);background:rgba(255,255,255,.06);
+  border:1px solid rgba(201,150,43,.45);border-radius:12px;padding:14px 16px;outline:none}
+.campo input:focus{border-color:var(--ouro-claro);background:rgba(255,255,255,.09)}
+.btn{width:100%;border:0;border-radius:14px;padding:16px;font:700 15px Montserrat;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--marrom2);background:linear-gradient(180deg,#f0d98f,#c9962b 60%,#a8781f);box-shadow:0 10px 24px rgba(0,0,0,.4);margin-top:6px}
+.btn:disabled{opacity:.6}
+.msg{min-height:20px;font-size:13px;margin-top:14px;text-align:center;line-height:1.5;color:#ffd7cf}
+.ajuda{margin-top:24px;width:100%;font-size:13px;text-align:center;line-height:1.5}
+.ajuda b{display:block;margin-bottom:10px;color:var(--ouro-claro);letter-spacing:.04em}
+.passo{display:flex;align-items:center;gap:12px;text-align:left;color:var(--creme);text-decoration:none;font-weight:600;font-size:13px;
+  border:1px solid rgba(201,150,43,.35);background:rgba(255,255,255,.04);border-radius:12px;padding:11px 14px;margin-top:8px}
+.passo small{display:inline;font-size:13px;font-weight:700;color:var(--ouro-claro);letter-spacing:.04em;margin-top:2px}
+.passo span{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;
+  color:var(--marrom2);background:linear-gradient(180deg,#f0d98f,#c9962b)}
+
+/* ---------- CARTÃO ---------- */
+#tela-cartao{display:none;flex-direction:column;align-items:center}
+.palco{perspective:1400px;width:var(--w);height:calc(var(--w) * 1.585)}
+.cartao{position:relative;width:100%;height:100%;transition:transform .8s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d;cursor:pointer}
+.cartao.virado{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  box-shadow:0 26px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08) inset;display:flex;flex-direction:column}
+.verso{transform:rotateY(180deg)}
+/* textura comum */
+.face::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 9px);mix-blend-mode:overlay}
+.face::after{content:"";position:absolute;inset:-40% -60%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.22) 50%,transparent 60%);transform:translateX(-30%);opacity:.55}
+.marca{position:absolute;width:92%;left:4%;top:30%;opacity:.05;pointer-events:none}
+
+/* MINISTÉRIO: dourado */
+.min .face{background:radial-gradient(130% 70% at 20% 0%,#fbefc0 0%,#e7c773 28%,#c9962b 58%,#9b6a1f 85%,#7a5016 100%);color:var(--texto)}
+.min .faixa{background:linear-gradient(90deg,#3a2210,#5b3a1e 50%,#3a2210);color:var(--ouro-claro)}
+.min .rot{color:#4a2d16;opacity:.85}
+.min .foto{box-shadow:0 0 0 3px #4a2d16,0 0 0 6px #f3dc95,0 12px 26px rgba(60,30,5,.45)}
+.min .cargo{background:#3a2210;color:#f3dc95}
+.min .linha{border-color:rgba(74,45,22,.35)}
+/* MEMBRO / OBREIRO: marrom */
+.mem .face{background:radial-gradient(130% 70% at 20% 0%,#7a5130 0%,#5b3a1e 30%,#3a2210 62%,#24150a 100%);color:var(--creme)}
+.mem .faixa{background:linear-gradient(90deg,#a8781f,#ecd48f 50%,#a8781f);color:#2a190b}
+.mem .rot{color:var(--ouro)}
+.mem .foto{box-shadow:0 0 0 3px #c9962b,0 0 0 6px rgba(236,212,143,.25),0 12px 26px rgba(0,0,0,.55)}
+.mem .cargo{background:linear-gradient(180deg,#ecd48f,#c9962b);color:#2a190b}
+.mem .linha{border-color:rgba(201,150,43,.35)}
+.mem .marca{opacity:.045}
+
+.cab{position:relative;display:flex;align-items:center;gap:10px;padding:16px 16px 10px}
+.cab img{width:48px;height:48px}
+.cab .ig{font-size:7.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.cab .nm{font-family:Cinzel,serif;font-weight:700;font-size:17px;letter-spacing:.05em;line-height:1.1}
+.cab .bl{font-size:7.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;opacity:.8}
+.faixa{position:relative;text-align:center;font:700 10px Montserrat;letter-spacing:.32em;padding:7px 0;text-transform:uppercase}
+.corpo{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 18px 0;min-height:0}
+.foto{width:38%;aspect-ratio:3/4;border-radius:12px;object-fit:cover;background:#ddd}
+.nome{font-family:Cinzel,serif;font-weight:700;font-size:clamp(15px,4.6vw,18px);line-height:1.2;text-align:center;margin-top:14px;letter-spacing:.02em}
+.cargo{margin-top:8px;font:700 10px Montserrat;letter-spacing:.2em;text-transform:uppercase;padding:6px 14px;border-radius:30px}
+.dados{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:auto 0}
+.dados div{border-top:1px solid;padding-top:5px}
+.dados div:last-child:nth-child(odd){grid-column:1/-1;text-align:center}
+.dados div.linha{border-top-style:solid}
+.rot{display:block;font-size:7.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
+.val{font-size:12.5px;font-weight:700;letter-spacing:.02em}
+.rodape{position:relative;display:flex;justify-content:space-between;align-items:center;padding:10px 16px 14px;font-size:8.5px;font-weight:600;letter-spacing:.06em;opacity:.85}
+.rodape .cod{font-family:Cinzel,serif;font-size:12px;letter-spacing:.12em;opacity:1}
+
+/* verso */
+.verso .corpo{justify-content:flex-start;padding-top:18px}
+.qr{background:#fff;border-radius:14px;padding:12px;width:56%;aspect-ratio:1;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.qr svg{width:100%;height:100%;display:block}
+.qrtxt{font-size:10px;font-weight:600;letter-spacing:.06em;text-align:center;margin-top:10px;opacity:.9}
+.igreja{text-align:center;font-size:9.5px;line-height:1.55;margin-top:14px;opacity:.92}
+.igreja b{display:block;font-size:10px;letter-spacing:.04em}
+.ass{margin-top:auto;width:80%;text-align:center;padding-bottom:6px}
+.ass .tr{border-top:1px solid;opacity:.6;margin-bottom:5px}
+.ass b{font-family:Cinzel,serif;font-size:12px;letter-spacing:.04em}
+.ass span{display:block;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;opacity:.8}
+.aviso{font-size:8px;text-align:center;opacity:.75;padding:0 18px 14px;letter-spacing:.03em;line-height:1.4}
+
+.dica{margin-top:16px;font-size:12px;opacity:.7;letter-spacing:.04em}
+.acoes{display:flex;gap:10px;margin-top:14px;width:var(--w)}
+.acoes button{flex:1;border:1px solid rgba(236,212,143,.4);background:rgba(255,255,255,.05);color:var(--ouro-claro);
+  font:600 12px Montserrat;letter-spacing:.06em;padding:12px;border-radius:12px}
+.status{margin-top:12px;font-size:11px;opacity:.6;text-align:center}
+.carregando{opacity:.6;pointer-events:none}
+</style>
+</head>
+<body>
+  <div class="topo" id="topo" style="display:none">
+    <img src="logo.png" alt="">
+    <b>CREDENCIAL RHEMA LUZ</b>
+    <button id="sair">Sair</button>
+  </div>
+
+  <section id="login">
+    <img class="selo" src="logo.png" alt="Logo Rhema">
+    <h1>Credencial Rhema Luz</h1>
+    <p class="sub">Entre com seu CPF e o código validador<br>enviado pela secretaria no WhatsApp.</p>
+    <div class="campo"><label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14"></div>
+    <div class="campo"><label for="cod">Código validador</label><input id="cod" autocomplete="off" autocapitalize="characters" placeholder="RL-XXXXXX" maxlength="9"></div>
+    <button class="btn" id="entrar">Entrar</button>
+    <div class="msg" id="msg"></div>
+    <div class="ajuda"><b>Ainda não tem o código?</b>
+      <a class="passo" href="https://forms.gle/hrY7cKVEVHRZ3Dyd9" target="_blank" rel="noopener"><span>1</span>Faça seu cadastro no formulário</a>
+      <a class="passo" id="zap" href="#" target="_blank" rel="noopener"><span>2</span><div>Peça o código à secretaria pelo<br>WhatsApp <small>(21) 99049-5754</small></div></a></div>
+  </section>
+
+  <section id="tela-cartao">
+    <div class="palco"><div class="cartao" id="cartao">
+      <div class="face frente">
+        <img class="marca lg" src="logo.png" alt="">
+        <div class="cab"><img class="lg" src="logo.png" alt=""><div>
+          <div class="ig">Igreja Assembleia de Deus</div>
+          <div class="nm">Ministério Rhema</div>
+          <div class="bl">Bairro da Luz</div></div></div>
+        <div class="faixa" id="titulo">Credencial</div>
+        <div class="corpo">
+          <img class="foto" id="foto" alt="Foto">
+          <div class="nome" id="nome"></div>
+          <div class="cargo" id="cargo"></div>
+          <div class="dados" id="dados"></div>
+        </div>
+        <div class="rodape"><span id="valid"></span><span class="cod" id="codigo"></span></div>
+      </div>
+      <div class="face verso">
+        <img class="marca lg" src="logo.png" alt="">
+        <div class="cab"><img class="lg" src="logo.png" alt=""><div>
+          <div class="ig">Igreja Assembleia de Deus</div>
+          <div class="nm">Ministério Rhema</div>
+          <div class="bl">Bairro da Luz</div></div></div>
+        <div class="faixa">Validação</div>
+        <div class="corpo">
+          <div class="qr" id="qr"></div>
+          <div class="qrtxt">Aponte a câmera para abrir o ofício de validação</div>
+          <div class="igreja"><b>IGREJA ASSEMBLEIA DE DEUS</b><b>MINISTÉRIO RHEMA BAIRRO DA LUZ</b>
+            CNPJ 65.538.185/0001-38<br>R. Monteiro Lobato, 512 – Da Luz<br>Nova Iguaçu – RJ · CEP 26255-600</div>
+          <div class="ass"><div class="tr"></div><b>Pr. Davidson de Almeida Feital</b><span>Presidente</span></div>
+        </div>
+        <div class="aviso">Documento pessoal e intransferível. A validade é confirmada pelo QR code.</div>
+      </div>
+    </div></div>
+    <div class="dica">Toque na credencial para ver o verso</div>
+    <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button></div>
+    <div class="status" id="status"></div>
+  </section>
+
+<script>
+// ===== Configuração =====
+const API = 'https://script.google.com/macros/s/AKfycbyYh-4P46sMY2gwL5m81MAIhkgPyKSJcLmK_dD0JRgDN0Qkdp7NIR9r67HRmIUT9W3vsA/exec'; // /exec do app da web
+const ZAP_SECRETARIA = '5521990495754';
+const MINISTERIO = ['Pastor(a) Dirigente','Pastor(a)','Missionária','Presbítero','Evangelista'];
+
+const $ = id => document.getElementById(id);
+const store = { get(k){ try{return JSON.parse(localStorage.getItem(k))}catch(e){return null} },
+                set(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} },
+                del(k){ try{localStorage.removeItem(k)}catch(e){} } };
+
+$('zap').href = 'https://wa.me/' + ZAP_SECRETARIA + '?text=' + encodeURIComponent('Olá! Quero o código validador da minha credencial.');
+
+// máscaras
+$('cpf').addEventListener('input', e => {
+  let d = e.target.value.replace(/\D/g,'').slice(0,11);
+  e.target.value = d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})-?(\d{1,2})$/,'$1-$2')
+    .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/,'$1.$2.$3-$4');
+});
+$('cod').addEventListener('input', e => {
+  let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (v.startsWith('RL')) v = v.slice(2);
+  e.target.value = v ? 'RL-' + v.slice(0,6) : '';
+});
+
+function genero(cargo, sexo){
+  const f = sexo === 'Feminino';
+  const m = {'Pastor(a) Dirigente': f?'Pastora Dirigente':'Pastor Dirigente','Pastor(a)': f?'Pastora':'Pastor',
+             'Obreiro(a)': f?'Obreira':'Obreiro','Diácono / Diaconisa': f?'Diaconisa':'Diácono','Presbítero': f?'Presbítera':'Presbítero'};
+  return m[cargo] || cargo || 'Membro';
+}
+
+function mostrar(c){
+  const min = MINISTERIO.includes(c.cargo);
+  document.body.querySelector('.cartao').parentElement.className = 'palco ' + (min ? 'min' : 'mem');
+  document.querySelectorAll('.lg').forEach(i => i.src = min ? 'logo-marrom.png' : 'logo-ouro.png');
+  const cg = genero(c.cargo, c.sexo);
+  $('titulo').textContent = min ? 'Credencial Ministerial' : (c.cargo === 'Membro' || !c.cargo ? 'Credencial de Membro' : 'Credencial de ' + cg);
+  $('foto').src = c.foto || 'logo.png';
+  $('nome').textContent = c.nome;
+  $('cargo').textContent = cg;
+  const campos = [['CPF', c.cpf], ['Nascimento', c.nascimento]];
+  if (min) campos.push(['Consagração', c.consagracao || '—']);
+  campos.push(['Membro desde', c.entrada || '—']);
+  campos.push(['Batismo', c.batismo || '—']);
+  $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val">${v}</span></div>`).join('');
+  $('valid').textContent = 'VÁLIDA ATÉ ' + c.validade;
+  $('codigo').textContent = c.codigo;
+  const qr = qrcode(0, 'M'); qr.addData(c.urlOficio); qr.make();
+  $('qr').innerHTML = qr.createSvgTag({cellSize: 4, margin: 0, scalable: true});
+  $('login').style.display = 'none'; $('topo').style.display = 'flex'; $('tela-cartao').style.display = 'flex';
+  $('status').textContent = c.atualizadoEm ? 'Atualizada em ' + c.atualizadoEm : '';
+}
+
+async function buscar(cpf, cod){
+  const r = await fetch(API + '?a=credencial&cpf=' + encodeURIComponent(cpf) + '&cod=' + encodeURIComponent(cod));
+  return r.json();
+}
+
+async function entrar(){
+  const cpf = $('cpf').value.replace(/\D/g,''), cod = $('cod').value.trim();
+  $('msg').textContent = '';
+  if (cpf.length !== 11 || !/^RL-[A-Z0-9]{6}$/.test(cod)) { $('msg').textContent = 'Confira o CPF e o código (RL-XXXXXX).'; return; }
+  $('entrar').disabled = true; $('entrar').textContent = 'Entrando…';
+  try {
+    const res = await buscar(cpf, cod);
+    if (!res.ok) { $('msg').textContent = res.erro; return; }
+    store.set('login', {cpf, cod}); store.set('cartao', res.credencial);
+    mostrar(res.credencial);
+  } catch (e) {
+    $('msg').textContent = 'Sem conexão. Tente de novo em instantes.';
+  } finally { $('entrar').disabled = false; $('entrar').textContent = 'Entrar'; }
+}
+
+async function atualizar(){
+  const l = store.get('login'); if (!l) return;
+  $('status').textContent = 'Atualizando…';
+  try {
+    const res = await buscar(l.cpf, l.cod);
+    if (!res.ok) { sair(); $('msg').textContent = res.erro; return; }
+    store.set('cartao', res.credencial); mostrar(res.credencial);
+  } catch (e) { $('status').textContent = 'Sem internet: mostrando a última versão salva.'; }
+}
+
+function sair(){
+  store.del('login'); store.del('cartao');
+  $('tela-cartao').style.display = 'none'; $('topo').style.display = 'none'; $('login').style.display = 'flex';
+  $('cartao').classList.remove('virado');
+}
+
+$('entrar').onclick = entrar;
+$('cod').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('cartao').onclick = () => $('cartao').classList.toggle('virado');
+$('girar').onclick = () => $('cartao').classList.toggle('virado');
+$('atualizar').onclick = atualizar;
+$('sair').onclick = sair;
+
+// ===== Início =====
+const demo = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('demo');
+if (demo) {
+  const ex = demo === 'ministerio'
+    ? {nome:'Nome do Pastor Exemplo', cargo:'Pastor(a) Dirigente', sexo:'Masculino', cpf:'000.000.000-00', nascimento:'01/01/1980',
+       consagracao:'10/05/2010', batismo:'20/12/1998', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO01', foto:'../prévia/demo_davidson.jpg', urlOficio:'https://exemplo/oficio'}
+    : {nome:'Nome do Membro Exemplo', cargo:'Membro', sexo:'Masculino', cpf:'000.000.000-00', nascimento:'01/01/1990',
+       batismo:'15/08/2005', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO02', foto:'../prévia/demo_jonathas.jpg', urlOficio:'https://exemplo/oficio'};
+  mostrar(ex);
+} else {
+  const c = store.get('cartao');
+  if (c && store.get('login')) { mostrar(c); atualizar(); }
+}
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
