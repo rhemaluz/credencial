@@ -1,10 +1,11 @@
 // Credencial Rhema Luz — modo offline.
 // A página (index.html) vem SEMPRE da internet primeiro (assim toda atualização aparece na hora);
 // sem internet, abre a última cópia salva. Imagens e bibliotecas: cópia salva primeiro.
-const CACHE = 'credencial-v6';
+const CACHE = 'credencial-v7';
 const ARQS = ['./', 'index.html', 'logo.png', 'logo-ouro.png', 'logo-marrom.png', 'manifest.webmanifest',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
 
 self.addEventListener('install', e => e.waitUntil(
   caches.open(CACHE)
