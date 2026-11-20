@@ -17,6 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --marrom:#4a2d16; --marrom2:#2a190b; --marrom3:#6b4423;
@@ -131,6 +132,12 @@ body{
 .carregando{opacity:.6;pointer-events:none}
 /* Impressão: GRÁFICA (CR80 com sangria e marcas, 3 páginas) ou A4 (frente e verso lado a lado, dobrar ao meio) */
 #impressao{display:none}
+#captura{position:fixed;left:-10000px;top:0;pointer-events:none}
+#captura .cap{position:relative;overflow:hidden}
+#captura .face{position:absolute;inset:0;transform:none!important;border-radius:0!important;box-shadow:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important}
+#captura .face::after{display:none}
+#captura .sangria .face{padding:18.9px}
+#captura .sangria .faixa{margin-left:-18.9px;margin-right:-18.9px}
 .modal{position:fixed;inset:0;background:rgba(10,5,2,.75);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal.aberto{display:flex}
 .modal .caixa{width:min(92vw,360px);background:linear-gradient(180deg,#3a2210,#24150a);border:1px solid rgba(201,150,43,.45);border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
@@ -476,15 +483,107 @@ async function gerarOficio(c){
 $('oficio').onclick = async () => {
   if (!atual) return;
   const b = $('oficio'); b.disabled = true; b.textContent = 'Gerando…';
-  try { (await gerarOficio(atual)).save('Oficio - ' + atual.nome + '.pdf'); }
+  try { await entregarPdf(await gerarOficio(atual), 'Oficio - ' + atual.nome + '.pdf'); }
   catch (e) { $('status').textContent = 'Não consegui gerar o ofício agora. Tente de novo.'; }
   finally { b.disabled = false; b.textContent = 'Ofício PDF'; }
 };
-const imprimir = modo => {
+// Entrega o PDF: no celular abre "compartilhar" (salvar em arquivos, WhatsApp, imprimir); no computador baixa.
+async function entregarPdf(doc, nome){
+  const blob = doc.output('blob');
+  const file = new File([blob], nome, { type: 'application/pdf' });
+  const celular = matchMedia('(pointer:coarse)').matches;
+  if (celular && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: nome }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// Fotografa uma face da credencial (fora da tela) em alta resolução. sangria = 3 mm a mais em cada lado.
+async function fotografar(sel, sangria){
+  const tipo = document.querySelector('.palco').classList.contains('min') ? 'min' : 'mem';
+  let cap = document.getElementById('captura');
+  if (!cap) { cap = document.createElement('div'); cap.id = 'captura'; document.body.appendChild(cap); }
+  cap.innerHTML = '';
+  const caixa = document.createElement('div'); caixa.className = 'palco ' + tipo + (sangria ? ' sangria' : '');
+  const el = document.createElement('div'); el.className = 'cap';
+  el.style.width = (sangria ? 377.8 : 340) + 'px'; el.style.height = (sangria ? 576.8 : 539) + 'px';
+  el.appendChild(document.querySelector(sel).cloneNode(true)); caixa.appendChild(el); cap.appendChild(caixa);
+  await document.fonts.ready;
+  const cv = await html2canvas(el, { scale: 3, useCORS: true, backgroundColor: null, logging: false });
+  cap.innerHTML = '';
+  return cv.toDataURL('image/jpeg', .95);
+}
+
+async function gerarCredencialPdf(modo){
+  const { jsPDF } = window.jspdf;
+  const nome = $('nome').textContent, cod = $('codigo').textContent;
+  const marcaH = (doc, x, y, w) => doc.line(x, y, x + w, y), marcaV = (doc, x, y, h) => doc.line(x, y, x, y + h);
+  if (modo === 'a4') {
+    const frente = await fotografar('.frente', false), verso = await fotografar('.verso', false);
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const X = 51, Y = 40, W = 54, H = 85.6;
+    doc.addImage(frente, 'JPEG', X, Y, W, H); doc.addImage(verso, 'JPEG', X + W, Y, W, H);
+    doc.setDrawColor(0); doc.setLineWidth(.2);
+    [X, X + 2 * W].forEach(x => [Y, Y + H].forEach(y => {
+      marcaH(doc, x === X ? x - 8 : x + 2, y, 6); marcaV(doc, x, y === Y ? y - 8 : y + 2, 6);
+    }));
+    doc.setLineDashPattern([1.2, 1], 0); doc.setDrawColor(60);
+    marcaV(doc, 105, Y - 9, 7); marcaV(doc, 105, Y + H + 2, 7); doc.setLineDashPattern([], 0);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(42, 25, 11);
+    doc.text('CREDENCIAL RHEMA LUZ', 105, 16, { align: 'center', charSpace: .6 });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90); doc.text(nome + ' · ' + cod, 105, 22, { align: 'center' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(50);
+    doc.text('DOBRE AQUI', 105, Y - 11, { align: 'center', charSpace: .5 }); doc.text('FRENTE   |   VERSO', 105, Y + H + 13, { align: 'center', charSpace: .5 });
+    let y = 150;
+    doc.setFontSize(11); doc.setTextColor(42, 25, 11); doc.text('COMO MONTAR SUA CREDENCIAL', 25, y, { charSpace: .5 }); y += 9;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(20);
+    ['Imprima esta folha em A4, só na frente, em tamanho real (100%), sem "ajustar à página". Use papel fotográfico ou papel de 180 g ou mais.',
+     'Recorte pelas marcas de corte (os traços pretos nos cantos), contornando a frente e o verso juntos.',
+     'Dobre ao meio na linha tracejada, com a parte impressa para fora: a frente fica de um lado e o verso do outro.',
+     'Cole as duas metades por dentro (cola em bastão ou fita dupla face) e deixe secar.',
+     'Plastifique ou use um porta-crachá. Tamanho final: 54 × 85,6 mm (padrão cartão).'].forEach((t, k) => {
+      const l = doc.splitTextToSize(t, 152); doc.text((k + 1) + '.', 25, y); doc.text(l, 32, y); y += l.length * 5.2 + 3;
+    });
+    doc.setFontSize(8.5); doc.setTextColor(110); doc.text('A validade da credencial é confirmada pelo QR code do verso. Documento pessoal e intransferível.', 25, y + 3);
+    return doc;
+  }
+  // GRÁFICA: 3 páginas de 80 x 111,6 mm (instruções + frente + verso com 3 mm de sangria e marcas de corte)
+  const frente = await fotografar('.frente', true), verso = await fotografar('.verso', true);
+  const doc = new jsPDF({ unit: 'mm', format: [80, 111.6] });
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(20); doc.text('INSTRUÇÕES PARA A GRÁFICA', 7, 11);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7); let y = 18;
+  ['Produto: cartão PVC CR80, 0,76 mm, frente e verso, 4x4 cores.',
+   'Tamanho final: 54 × 85,6 mm, na vertical (em pé).',
+   'Sangria: 3 mm em todos os lados. As marcas pretas indicam a linha de corte.',
+   'Imprimir em 100% (tamanho real), sem ajustar à página.',
+   'Página 2: frente. Página 3: verso. Virar no lado maior; o topo das duas faces fica do mesmo lado.',
+   'Cantos arredondados (raio 3 mm), se disponível.',
+   'Titular: ' + nome + ' · ' + cod].forEach(t => {
+    const l = doc.splitTextToSize(t, 62); doc.text('•', 7, y); doc.text(l, 10, y); y += l.length * 3.4 + 1.6;
+  });
+  [[frente, 'FRENTE'], [verso, 'VERSO']].forEach(([img, rot]) => {
+    doc.addPage([80, 111.6]);
+    doc.addImage(img, 'JPEG', 10, 10, 60, 91.6);
+    doc.setDrawColor(0); doc.setLineWidth(.1);
+    [13, 67].forEach(x => [13, 98.6].forEach(yy => {
+      marcaH(doc, x === 13 ? 2 : 71, yy, 7); marcaV(doc, x, yy === 13 ? 2 : 102.6, 7);
+    }));
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(5.5); doc.setTextColor(0);
+    doc.text(rot + ' · 54 × 85,6 mm + sangria 3 mm', 40, 109, { align: 'center' });
+  });
+  return doc;
+}
+
+const imprimir = async modo => {
   $('modalImp').classList.remove('aberto');
-  montarImpressao(modo);
-  document.title = 'Credencial ' + (modo === 'a4' ? 'A4' : 'Grafica') + ' - ' + ($('nome').textContent || 'Rhema Luz');
-  setTimeout(() => { window.print(); document.title = 'Credencial Rhema Luz'; }, 300);
+  const b = $('imprimir'); b.disabled = true; b.textContent = 'Gerando PDF…';
+  try {
+    const doc = await gerarCredencialPdf(modo);
+    await entregarPdf(doc, 'Credencial ' + (modo === 'a4' ? 'A4' : 'Grafica') + ' - ' + ($('nome').textContent || 'Rhema Luz') + '.pdf');
+  } catch (e) { $('status').textContent = 'Não consegui gerar o PDF agora. Tente de novo.'; console.error(e); }
+  finally { b.disabled = false; b.textContent = 'Imprimir'; }
 };
 $('imprimir').onclick = () => $('modalImp').classList.add('aberto');
 $('impGraf').onclick = () => imprimir('graf');
