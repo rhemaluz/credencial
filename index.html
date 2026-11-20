@@ -128,6 +128,23 @@ body{
   font:600 12px Montserrat;letter-spacing:.06em;padding:12px;border-radius:12px}
 .status{margin-top:12px;font-size:11px;opacity:.6;text-align:center}
 .carregando{opacity:.6;pointer-events:none}
+/* Impressão: cartão PVC CR80 em pé (54 x 85,6 mm), frente e verso em páginas separadas */
+#impressao{display:none}
+@media print{
+  @page{size:54mm 85.6mm;margin:0}
+  html,body{background:none!important;padding:0!important;margin:0!important;display:block!important;min-height:0!important}
+  body>*:not(#tela-cartao){display:none!important}
+  #tela-cartao>*:not(#impressao){display:none!important}
+  #tela-cartao{display:block!important}
+  #impressao{display:block!important}
+  .pg{width:54mm;height:85.6mm;overflow:hidden;page-break-after:always;break-after:page;position:relative}
+  .pg:last-child{page-break-after:auto;break-after:auto}
+  .pg .escala{width:340px;height:539px;zoom:.6003;position:absolute;left:0;top:0}
+  .pg .face{position:absolute;inset:0;transform:none!important;border-radius:0!important;box-shadow:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pg .face::after{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
@@ -185,7 +202,8 @@ body{
       </div>
     </div></div>
     <div class="dica">Toque na credencial para ver o verso</div>
-    <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button></div>
+    <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button><button id="imprimir">Imprimir</button></div>
+    <div id="impressao"></div>
     <div class="status" id="status"></div>
   </section>
 
@@ -284,6 +302,21 @@ $('cod').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
 $('cartao').onclick = () => $('cartao').classList.toggle('virado');
 $('girar').onclick = () => $('cartao').classList.toggle('virado');
 $('atualizar').onclick = atualizar;
+function montarImpressao(){
+  const tipo = document.querySelector('.palco').classList.contains('min') ? 'min' : 'mem';
+  const box = $('impressao'); box.innerHTML = '';
+  ['.frente', '.verso'].forEach(sel => {
+    const pg = document.createElement('div'); pg.className = 'pg ' + tipo;
+    const esc = document.createElement('div'); esc.className = 'escala';
+    esc.appendChild(document.querySelector(sel).cloneNode(true));
+    pg.appendChild(esc); box.appendChild(pg);
+  });
+}
+$('imprimir').onclick = () => {
+  montarImpressao();
+  document.title = 'Credencial - ' + ($('nome').textContent || 'Rhema Luz');
+  setTimeout(() => { window.print(); document.title = 'Credencial Rhema Luz'; }, 300);
+};
 $('sair').onclick = sair;
 
 // ===== Início =====
@@ -295,6 +328,7 @@ if (demo) {
     : {nome:'Nome do Membro Exemplo', cargo:'Membro', sexo:'Masculino', cpf:'000.000.000-00', nascimento:'01/01/1990',
        batismo:'15/08/2005', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO02', foto:'../prévia/demo_jonathas.jpg', urlOficio:'https://exemplo/oficio'};
   mostrar(ex);
+  if (new URLSearchParams(location.search).get('imprimir')) montarImpressao();
 } else {
   const c = store.get('cartao');
   if (c && store.get('login')) { mostrar(c); atualizar(); }

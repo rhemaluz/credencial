@@ -1,5 +1,5 @@
 // Credencial Rhema Luz — guarda o app para abrir sem internet
-const CACHE = 'credencial-v3';
+const CACHE = 'credencial-v4';
 const ARQS = ['./', 'index.html', 'logo.png', 'logo-ouro.png', 'logo-marrom.png', 'manifest.webmanifest',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
