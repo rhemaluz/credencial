@@ -212,6 +212,7 @@ body{
     <div class="acoes"><button id="atualizar">Atualizar</button><button id="girar">Ver verso</button><button id="imprimir">Imprimir (gráfica)</button><button id="oficio">Ofício PDF</button></div>
     <div id="impressao"></div>
     <div class="status" id="status"></div>
+    <div class="status" style="opacity:.35;margin-top:4px">versão 20/11/2026</div>
   </section>
 
 <script>
@@ -376,7 +377,13 @@ if (demo) {
   const c = store.get('cartao');
   if (c && store.get('login')) { mostrar(c); atualizar(); }
 }
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // procura versão nova sempre que o app abre; quando chegar, recarrega uma vez sozinho
+  const tinha = !!navigator.serviceWorker.controller;
+  let recarregou = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (tinha && !recarregou) { recarregou = true; location.reload(); } });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => r.update()).catch(() => {});
+}
 </script>
 </body>
 </html>
