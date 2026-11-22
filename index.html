@@ -249,7 +249,7 @@ body{
       <button class="opc" id="impA4"><b>A4</b>Para imprimir em casa: frente e verso lado a lado numa folha, recortar, dobrar ao meio e plastificar.</button>
       <button class="cancelar" id="impCancelar">Cancelar</button></div></div>
     <div class="status" id="status"></div>
-    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 9</div>
+    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 10</div>
   </section>
 
 <script>
@@ -298,7 +298,7 @@ function mostrar(c){
   $('cargo').textContent = cg;
   const NI = 'NÃO INFORMADO';
   const campos = [['CPF', c.cpf], ['Registro Geral', c.rg || NI], ['Nascimento', c.nascimento], ['Consagração', c.consagracao || NI],
-                  ['Membro desde', c.entrada || '—'], ['Batismo', c.batismo || '—']];
+                  ['Membro desde', c.entrada || '—'], ['Batismo', c.batismo || NI]];
   $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val${v === NI ? ' ni' : ''}">${v}</span></div>`).join('');
   $('valid').textContent = 'VÁLIDA ATÉ ' + c.validade;
   $('codigo').textContent = c.codigo;
