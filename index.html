@@ -249,7 +249,7 @@ body{
       <button class="opc" id="impA4"><b>A4</b>Para imprimir em casa: frente e verso lado a lado numa folha, recortar, dobrar ao meio e plastificar.</button>
       <button class="cancelar" id="impCancelar">Cancelar</button></div></div>
     <div class="status" id="status"></div>
-    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 7</div>
+    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 8</div>
   </section>
 
 <script>
@@ -297,7 +297,7 @@ function mostrar(c){
   $('nome').textContent = c.nome;
   $('cargo').textContent = cg;
   const NI = 'NÃO INFORMADO';
-  const campos = [['CPF', c.cpf], ['RG', c.rg || NI], ['Nascimento', c.nascimento], ['Consagração', c.consagracao || NI],
+  const campos = [['CPF', c.cpf], ['Registro Geral', c.rg || NI], ['Nascimento', c.nascimento], ['Consagração', c.consagracao || NI],
                   ['Membro desde', c.entrada || '—'], ['Batismo', c.batismo || '—']];
   $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val${v === NI ? ' ni' : ''}">${v}</span></div>`).join('');
   $('valid').textContent = 'VÁLIDA ATÉ ' + c.validade;
@@ -478,7 +478,7 @@ async function gerarOficio(c){
   const asn = await pngDataUrl('assinatura-preta.png');
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text('Davidson de Almeida Feital', 105, ya + 6, { align: 'center' });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(cinzaM); doc.text('PASTOR PRESIDENTE', 105, ya + 11, { align: 'center', charSpace: 1 });
-  if (asn) doc.addImage(asn, 'PNG', 75, ya - 11.5, 60, 19.1);
+  if (asn) doc.addImage(asn, 'PNG', 75, ya - 10, 60, 17.25);
   // rodapé com QR
   const q = qrcode(0, 'M'); q.addData(c.urlOficio); q.make();
   doc.addImage(q.createDataURL(6, 0), 'GIF', 20, 252, 26, 26);
