@@ -123,7 +123,6 @@ body{
 .ass{margin-top:auto;width:80%;text-align:center;padding-bottom:6px}
 .ass .asi{display:block;width:78%;margin:0 auto -15px;position:relative;z-index:2}
 .ass b{position:relative;z-index:1}
-.min .ass .asi{filter:drop-shadow(0 1px 1.5px rgba(74,45,22,.55))}
 .ass .tr{border-top:1px solid;opacity:.6;margin-bottom:5px}
 .ass b{font-family:Cinzel,serif;font-size:12px;letter-spacing:.04em}
 .ass span{display:block;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;opacity:.8}
@@ -237,7 +236,7 @@ body{
           <div class="qrtxt">Aponte a câmera para abrir o ofício de validação</div>
           <div class="igreja"><b>IGREJA ASSEMBLEIA DE DEUS</b><b>MINISTÉRIO RHEMA BAIRRO DA LUZ</b>
             CNPJ 65.538.185/0001-38<br>R. Monteiro Lobato, 512 – Da Luz<br>Nova Iguaçu – RJ · CEP 26255-600</div>
-          <div class="ass"><img class="asi" src="assinatura-branca.png" alt=""><b>Pr. Davidson de Almeida Feital</b><span>Presidente</span></div>
+          <div class="ass"><img class="asi" src="assinatura-preta.png" alt=""><b>Pr. Davidson de Almeida Feital</b><span>Presidente</span></div>
         </div>
         <div class="aviso">Documento pessoal e intransferível. A validade é confirmada pelo QR code.</div>
       </div>
@@ -250,7 +249,7 @@ body{
       <button class="opc" id="impA4"><b>A4</b>Para imprimir em casa: frente e verso lado a lado numa folha, recortar, dobrar ao meio e plastificar.</button>
       <button class="cancelar" id="impCancelar">Cancelar</button></div></div>
     <div class="status" id="status"></div>
-    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 4</div>
+    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026 · 5</div>
   </section>
 
 <script>
@@ -291,7 +290,7 @@ function mostrar(c){
   const min = MINISTERIO.includes(c.cargo);
   document.body.querySelector('.cartao').parentElement.className = 'palco ' + (min ? 'min' : 'mem');
   document.querySelectorAll('.lg').forEach(i => i.src = min ? 'logo-marrom.png' : 'logo-ouro.png');
-  document.querySelectorAll('.asi').forEach(i => i.src = min ? 'assinatura-branca.png' : 'assinatura-clara.png');
+  document.querySelectorAll('.asi').forEach(i => i.src = min ? 'assinatura-preta.png' : 'assinatura-clara.png');
   const cg = genero(c.cargo, c.sexo);
   $('titulo').textContent = min ? 'Credencial Ministerial' : (c.cargo === 'Membro' || !c.cargo ? 'Credencial de Membro' : 'Credencial de ' + cg);
   $('foto').src = c.foto || 'logo.png';
