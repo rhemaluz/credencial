@@ -109,6 +109,7 @@ body{
 .dados div.linha{border-top-style:solid}
 .rot{display:block;font-size:7.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px}
 .val{font-size:12.5px;font-weight:700;letter-spacing:.02em}
+.val.ni{font-size:9.5px;letter-spacing:.06em;opacity:.8}
 .rodape{position:relative;display:flex;justify-content:space-between;align-items:center;padding:10px 16px 14px;font-size:8.5px;font-weight:600;letter-spacing:.06em;opacity:.85}
 .rodape .cod{font-family:Cinzel,serif;font-size:12px;letter-spacing:.12em;opacity:1}
 
@@ -246,7 +247,7 @@ body{
       <button class="opc" id="impA4"><b>A4</b>Para imprimir em casa: frente e verso lado a lado numa folha, recortar, dobrar ao meio e plastificar.</button>
       <button class="cancelar" id="impCancelar">Cancelar</button></div></div>
     <div class="status" id="status"></div>
-    <div class="status" style="opacity:.35;margin-top:4px">versão 20/11/2026</div>
+    <div class="status" style="opacity:.35;margin-top:4px">versão 22/11/2026</div>
   </section>
 
 <script>
@@ -292,11 +293,10 @@ function mostrar(c){
   $('foto').src = c.foto || 'logo.png';
   $('nome').textContent = c.nome;
   $('cargo').textContent = cg;
-  const campos = [['CPF', c.cpf], ['Nascimento', c.nascimento]];
-  if (min && c.consagracao) campos.push(['Consagração', c.consagracao]);
-  campos.push(['Membro desde', c.entrada || '—']);
-  campos.push(['Batismo', c.batismo || '—']);
-  $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val">${v}</span></div>`).join('');
+  const NI = 'NÃO INFORMADO';
+  const campos = [['CPF', c.cpf], ['RG', c.rg || NI], ['Nascimento', c.nascimento], ['Consagração', c.consagracao || NI],
+                  ['Membro desde', c.entrada || '—'], ['Batismo', c.batismo || '—']];
+  $('dados').innerHTML = campos.map(([r,v]) => `<div class="linha"><span class="rot">${r}</span><span class="val${v === NI ? ' ni' : ''}">${v}</span></div>`).join('');
   $('valid').textContent = 'VÁLIDA ATÉ ' + c.validade;
   $('codigo').textContent = c.codigo;
   const qr = qrcode(0, 'M'); qr.addData(c.urlOficio); qr.make();
@@ -454,13 +454,13 @@ async function gerarOficio(c){
   doc.setDrawColor(190); doc.setLineWidth(.3); doc.setFillColor(246); doc.rect(20, 71, 170, 42, 'FD');
   if (foto) doc.addImage(foto, 'JPEG', 24, 75, 25.5, 34);
   doc.setTextColor(preto); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text(c.nome, 56, 84);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.text('CPF ' + c.cpf, 56, 91);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.text('CPF ' + c.cpf + (c.rg ? '  ·  RG ' + c.rg : ''), 56, 91);
   doc.setFont('helvetica', 'bold'); doc.text(cargo.toUpperCase(), 56, 98, { charSpace: .4 });
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(cinzaM); doc.text('Credencial válida até ' + c.validade, 56, 105);
   // texto
   doc.setTextColor(preto); doc.setFontSize(11.5);
   const p1 = 'A Igreja Assembleia de Deus Ministério Rhema Bairro da Luz, inscrita no CNPJ sob o nº 65.538.185/0001-38, com sede na R. Monteiro Lobato, 512 – Da Luz, Nova Iguaçu – RJ, DECLARA, para os devidos fins, que '
-    + c.nome + ', inscrit' + a + ' no CPF sob o nº ' + c.cpf + ', é membro ativo desta igreja' + (c.entrada ? ' desde ' + c.entrada : '')
+    + c.nome + ', inscrit' + a + ' no CPF sob o nº ' + c.cpf + (c.rg ? ' e portador' + a + ' do RG nº ' + c.rg : '') + ', é membro ativo desta igreja' + (c.entrada ? ' desde ' + c.entrada : '')
     + ', exercendo a função de ' + cargo + (c.consagracao ? ', consagrad' + a + ' em ' + c.consagracao : '') + '.';
   const p2 = 'Declaramos ainda que a credencial apresentada é autêntica e válida até ' + c.validade + ', sendo pessoal e intransferível.';
   let y = 126;
@@ -598,7 +598,7 @@ const demo = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSear
 if (demo) {
   const ex = demo === 'ministerio'
     ? {nome:'Nome do Pastor Exemplo', cargo:'Pastor(a) Dirigente', sexo:'Masculino', cpf:'000.000.000-00', nascimento:'01/01/1980',
-       consagracao:'10/05/2010', batismo:'20/12/1998', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO01', foto:'../prévia/demo_davidson.jpg', urlOficio:'https://exemplo/oficio'}
+       rg:'09.094.975-1', consagracao:'10/05/2010', batismo:'20/12/1998', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO01', foto:'../prévia/demo_davidson.jpg', urlOficio:'https://exemplo/oficio'}
     : {nome:'Nome do Membro Exemplo', cargo:'Membro', sexo:'Masculino', cpf:'000.000.000-00', nascimento:'01/01/1990',
        batismo:'15/08/2005', entrada:'06/03/2021', validade:'31/12/2027', codigo:'RL-DEMO02', foto:'../prévia/demo_jonathas.jpg', urlOficio:'https://exemplo/oficio'};
   mostrar(ex);
